@@ -39,7 +39,7 @@ export default function BrowseProjects() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -51,10 +51,10 @@ export default function BrowseProjects() {
   useEffect(() => {
     let filtered = projects;
 
-    // Filter by category
-    if (selectedCategory !== "All Categories") {
+    // Filter by categories
+    if (selectedCategories.length > 0) {
       filtered = filtered.filter(project => 
-        (project.category || 'Web Development') === selectedCategory
+        selectedCategories.includes(project.category || 'Web Development')
       );
     }
 
@@ -70,7 +70,7 @@ export default function BrowseProjects() {
     }
 
     setFilteredProjects(filtered);
-  }, [searchQuery, selectedCategory, projects]);
+  }, [searchQuery, selectedCategories, projects]);
 
   const fetchProjects = async () => {
     try {
@@ -122,51 +122,84 @@ export default function BrowseProjects() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a4d8f] via-[#2563eb] to-[#0ea5e9]">
       {/* Header */}
       <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
+        <div className="container mx-auto px-4 py-4">
+          {/* Top Row: Logo, Title, Search */}
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <img src="/logo-black.svg" alt="ProjectKart" className="h-8 w-8 brightness-0 invert" />
+              <span className="text-white font-bold text-lg hidden sm:block">ProjectKart</span>
+            </div>
+            
+            <div className="flex-1 flex justify-center max-w-2xl mx-auto">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+                <Input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
+                />
+              </div>
+            </div>
+            
             <Button
               onClick={() => navigate('/')}
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 whitespace-nowrap"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              <span className="hidden sm:inline">Home</span>
             </Button>
-            
-            <h1 className="text-xl md:text-2xl font-bold text-white">
-              Browse Projects
-            </h1>
-            
-            {/* Search Bar */}
-            <div className="relative w-48 md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-              <Input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-2 text-sm bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
-              />
-            </div>
           </div>
 
-          {/* Category Filter */}
-          <div className="mt-3 pb-1">
-            <div className="flex flex-wrap gap-1.5">
-              {PROJECT_CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1 text-xs rounded-full font-medium transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-white text-blue-600 shadow-lg'
-                      : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+          {/* Bottom Row: Category Filters */}
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-white font-semibold text-sm">Filter by Category</span>
+              {selectedCategories.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/60">
+                    {selectedCategories.length} selected
+                  </span>
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="text-xs text-white/70 hover:text-white underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              {PROJECT_CATEGORIES.filter(cat => cat !== "All Categories").map((cat) => {
+                const isSelected = selectedCategories.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedCategories(selectedCategories.filter(c => c !== cat));
+                      } else {
+                        setSelectedCategories([...selectedCategories, cat]);
+                      }
+                    }}
+                    className={`px-4 py-2 text-xs font-medium rounded-lg transition-all relative ${
+                      isSelected
+                        ? 'bg-white text-blue-600 shadow-lg scale-105'
+                        : 'bg-white/20 text-white hover:bg-white/30 hover:scale-105'
+                    }`}
+                  >
+                    {cat}
+                    {isSelected && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center text-white text-[10px]">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -197,7 +230,7 @@ export default function BrowseProjects() {
           <>
             <div className="mb-4 text-white/90 text-sm text-center md:text-left">
               {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
-              {selectedCategory !== "All Categories" && ` in ${selectedCategory}`}
+              {selectedCategories.length > 0 && ` in ${selectedCategories.join(', ')}`}
               {searchQuery && ` matching "${searchQuery}"`}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -218,8 +251,77 @@ export default function BrowseProjects() {
 
       {/* Footer */}
       <footer className="bg-gray-900/50 backdrop-blur-md border-t border-white/10 py-12 mt-20">
-        <div className="container mx-auto px-4 text-center text-white/80">
-          <p>&copy; {new Date().getFullYear()} ProjectKart. All rights reserved.</p>
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/logo-black.svg" alt="ProjectKart" className="h-10 w-10 brightness-0 invert" />
+                <span className="text-white font-bold text-lg">ProjectKart</span>
+              </div>
+              <p className="text-white/70 text-sm">
+                Professional ready-made projects and custom solutions for your business needs.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <button 
+                    onClick={() => navigate('/')} 
+                    className="text-white/70 hover:text-white transition-colors text-sm"
+                  >
+                    Home
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => navigate('/browse-projects')} 
+                    className="text-white/70 hover:text-white transition-colors text-sm"
+                  >
+                    Browse Projects
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      const phoneNumber = "919137106851";
+                      const message = encodeURIComponent("Hello, I'd like to discuss a project with you!");
+                      window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                    }}
+                    className="text-white/70 hover:text-white transition-colors text-sm"
+                  >
+                    Contact Us
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Get in Touch */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Get in Touch</h3>
+              <p className="text-white/70 text-sm mb-4">
+                Ready to start your project? Contact us today!
+              </p>
+              <Button 
+                onClick={() => {
+                  const phoneNumber = "919137106851";
+                  const message = encodeURIComponent("Hello, I'd like to discuss a project with you!");
+                  window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+                }}
+                className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white hover:from-blue-700 hover:to-cyan-500"
+              >
+                WhatsApp Us
+              </Button>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-white/10 pt-6 text-center text-white/70 text-sm">
+            <p>&copy; {new Date().getFullYear()} ProjectKart. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
