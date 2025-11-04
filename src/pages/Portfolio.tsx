@@ -19,12 +19,14 @@ export default function Portfolio() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProjects();
     fetchSettings();
+    checkAdminStatus();
 
     // Add scroll listener
     const handleScroll = () => {
@@ -79,6 +81,24 @@ export default function Portfolio() {
     }
   };
 
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAdmin(!!session);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  };
+
+  const handleAddProject = () => {
+    if (isAdmin) {
+      navigate('/admin/project/new');
+    } else {
+      navigate('/admin/login');
+    }
+  };
+
   const handleContactClick = () => {
     const phoneNumber = "919137106851"; // Your WhatsApp number with country code
     const message = encodeURIComponent("Hello, I'd like to discuss a project with you!");
@@ -102,28 +122,30 @@ export default function Portfolio() {
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/5 border-b border-white/10 transition-all duration-300">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-cyan-400 rounded"></div>
-            </div>
-            <div className="flex gap-6 ml-6">
-              <button 
-                onClick={() => navigate('/')}
-                className={`font-medium transition-colors ${
-                  isScrolled ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-cyan-200'
-                }`}
-              >
-                Home
-              </button>
-              <button 
-                onClick={scrollToProjects}
-                className={`font-medium transition-colors ${
-                  isScrolled ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-cyan-200'
-                }`}
-              >
-                Browse Projects
-              </button>
-            </div>
+            <img src="/logo-black.svg" alt="ProjectKart Logo" className="h-10 w-10" />
+            <span className={`font-bold text-xl transition-colors ${
+              isScrolled ? 'text-gray-900' : 'text-white'
+            }`}>ProjectKart</span>
           </div>
+          <div className="flex gap-6">
+            <button 
+              onClick={() => navigate('/')}
+              className={`font-medium transition-colors ${
+                isScrolled ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-cyan-200'
+              }`}
+            >
+              Home
+            </button>
+            <button 
+              onClick={scrollToProjects}
+              className={`font-medium transition-colors ${
+                isScrolled ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-cyan-200'
+              }`}
+            >
+              Browse Projects
+            </button>
+          </div>
+          <div className="w-10"></div>
         </div>
       </header>
 
@@ -178,11 +200,15 @@ export default function Portfolio() {
                 {/* Phone content */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center p-6">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl mx-auto mb-3 flex items-center justify-center">
-                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button 
+                      onClick={handleAddProject}
+                      className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl mx-auto mb-3 flex items-center justify-center hover:from-blue-600 hover:to-cyan-500 transition-all cursor-pointer shadow-lg hover:shadow-xl group"
+                      title={isAdmin ? "Add New Project" : "Login to Add Projects"}
+                    >
+                      <svg className="w-10 h-10 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
-                    </div>
+                    </button>
                     <div className="text-gray-600 text-xs mb-2">1400 x 900px</div>
                     <div className="w-full h-24 bg-white/50 rounded-xl mb-2"></div>
                     <div className="text-xs text-gray-400">2532 x 1170px</div>
@@ -190,9 +216,12 @@ export default function Portfolio() {
                 </div>
                 {/* Contact button on phone */}
                 <div className="absolute top-4 right-4">
-                  <div className="bg-white px-4 py-1.5 rounded-full shadow-lg text-blue-600 font-semibold text-xs">
+                  <button 
+                    onClick={handleContactClick}
+                    className="bg-white px-4 py-1.5 rounded-full shadow-lg text-blue-600 font-semibold text-xs hover:bg-blue-50 hover:shadow-xl transition-all cursor-pointer"
+                  >
                     Contact
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -207,16 +236,9 @@ export default function Portfolio() {
             <h2 className="text-3xl font-bold text-gray-900 mb-3">
               Featured Projects
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Explore our portfolio of innovative solutions ready to deploy
             </p>
-            <Button
-              onClick={() => navigate('/browse-projects')}
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600"
-            >
-              View All Projects
-            </Button>
           </div>
 
           {loading ? (
@@ -227,18 +249,32 @@ export default function Portfolio() {
               <p className="text-gray-500">Check back soon for amazing projects!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.slice(0, 6).map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  title={project.title}
-                  description={project.description}
-                  technologies={project.technologies}
-                  imageUrl={project.image_url}
-                  whatsappNumber={whatsappNumber}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                {projects.slice(0, 6).map((project) => (
+                  <ProjectCard
+                    key={project.id}
+                    title={project.title}
+                    description={project.description}
+                    technologies={project.technologies}
+                    imageUrl={project.image_url}
+                    whatsappNumber={whatsappNumber}
+                  />
+                ))}
+              </div>
+              
+              {projects.length > 6 && (
+                <div className="text-center">
+                  <Button
+                    onClick={() => navigate('/browse-projects')}
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:from-blue-700 hover:to-cyan-600"
+                  >
+                    View All Projects
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
@@ -249,8 +285,8 @@ export default function Portfolio() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-400 rounded-lg"></div>
-                <span className="text-white font-bold text-lg">Projects</span>
+                <img src="/logo-black.svg" alt="ProjectKart Logo" className="h-10 w-10 brightness-0 invert" />
+                <span className="text-white font-bold text-lg">ProjectKart</span>
               </div>
               <p className="text-gray-400">
                 Professional ready-made projects and custom solutions for your business needs.
@@ -277,7 +313,7 @@ export default function Portfolio() {
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Projects Portfolio. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} ProjectKart. All rights reserved.</p>
           </div>
         </div>
       </footer>

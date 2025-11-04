@@ -219,7 +219,7 @@ export default function BrowseProjects() {
       {/* Footer */}
       <footer className="bg-gray-900/50 backdrop-blur-md border-t border-white/10 py-12 mt-20">
         <div className="container mx-auto px-4 text-center text-white/80">
-          <p>&copy; {new Date().getFullYear()} Projects Portfolio. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ProjectKart. All rights reserved.</p>
         </div>
       </footer>
     </div>

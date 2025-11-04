@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 
 const authSchema = z.object({
@@ -84,165 +83,51 @@ export default function Login() {
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate input
-    const validation = authSchema.safeParse({ email, password });
-    if (!validation.success) {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: validation.error.errors[0].message,
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Check if any users already exist
-      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-      
-      if (listError) {
-        // If we can't list users (which is expected for non-admin), just show a message
-        toast({
-          variant: "destructive",
-          title: "Signup Disabled",
-          description: "New account registration is currently disabled. Please contact the administrator.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const redirectUrl = `${window.location.origin}/admin/dashboard`;
-      const { error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-        },
-      });
-
-      if (error) {
-        if (error.message.includes('already registered')) {
-          toast({
-            variant: "destructive",
-            title: "Account Exists",
-            description: "This email is already registered. Please login instead.",
-          });
-        } else {
-          throw error;
-        }
-      } else {
-        toast({
-          title: "Success!",
-          description: "Account created successfully. Please check your email for verification.",
-        });
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "An unexpected error occurred.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--gradient-dark)] p-4">
-      <Card className="w-full max-w-md border-border bg-card shadow-[var(--shadow-card)]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a4d8f] via-[#2563eb] to-[#0ea5e9] p-4">
+      <Card className="w-full max-w-md border-white/20 bg-white/10 backdrop-blur-lg shadow-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold text-white">
             Admin Portal
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Manage your portfolio projects
+          <CardDescription className="text-white/80">
+            Sign in to manage your portfolio projects
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-input border-border"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="bg-input border-border"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={loading}
-                >
-                  {loading ? "Logging in..." : "Login"}
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-input border-border"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="bg-input border-border"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Must be at least 6 characters
-                  </p>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={loading}
-                >
-                  {loading ? "Creating account..." : "Sign Up"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-white text-blue-600 hover:bg-white/90 font-semibold"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Sign In"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
