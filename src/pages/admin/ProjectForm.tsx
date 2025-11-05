@@ -13,7 +13,7 @@ import { z } from "zod";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(100, "Title too long"),
-  description: z.string().trim().min(1, "Description is required").max(500, "Description too long"),
+  description: z.string().trim().min(1, "Description is required").max(5000, "Description is too long (max 5000 characters)"),
   technologies: z.string().trim().min(1, "Technologies are required"),
   category: z.string().optional(), // Make category optional
 });
@@ -46,6 +46,7 @@ export default function ProjectForm() {
   const [description, setDescription] = useState("");
   const [technologies, setTechnologies] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [published, setPublished] = useState(false);
   const [category, setCategory] = useState("Web Development");
 
@@ -82,6 +83,16 @@ export default function ProjectForm() {
       setDescription(data.description);
       setTechnologies(Array.isArray(data.technologies) ? data.technologies.join(', ') : '');
       setImageUrl(data.image_url || '');
+      
+      // Handle both new image_urls array and old single image_url
+      let urls: string[] = [];
+      if (data.image_urls && Array.isArray(data.image_urls) && data.image_urls.length > 0) {
+        urls = data.image_urls.map(String).filter(url => url && url.trim() !== '');
+      } else if (data.image_url && data.image_url.trim() !== '') {
+        urls = [data.image_url];
+      }
+      setImageUrls(urls);
+      
       setPublished(data.published);
       // Only set category if it exists in the data
       if (data.category) {
@@ -99,59 +110,101 @@ export default function ProjectForm() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validate file type and size
+    // Validate file types and sizes
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Please upload a JPEG, PNG, WebP, or GIF image.",
-      });
-      return;
-    }
+    const maxSize = 5 * 1024 * 1024; // 5MB limit
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "Please upload an image smaller than 5MB.",
-      });
-      return;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      if (!validTypes.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: `${file.name}: Please upload a JPEG, PNG, WebP, or GIF image.`,
+        });
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: `${file.name}: Please upload an image smaller than 5MB.`,
+        });
+        return;
+      }
     }
 
     setUploading(true);
+    const uploadedUrls: string[] = [];
+
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('project-images')
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from('project-images')
+          .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('project-images')
-        .getPublicUrl(filePath);
+        const { data: { publicUrl } } = supabase.storage
+          .from('project-images')
+          .getPublicUrl(filePath);
 
-      setImageUrl(publicUrl);
+        uploadedUrls.push(publicUrl);
+      }
+
+      setImageUrls([...imageUrls, ...uploadedUrls]);
+      // Set first image as primary image for backward compatibility
+      if (!imageUrl && uploadedUrls.length > 0) {
+        setImageUrl(uploadedUrls[0]);
+      }
+
       toast({
         title: "Success",
-        description: "Image uploaded successfully.",
+        description: `${uploadedUrls.length} image(s) uploaded successfully.`,
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Upload failed",
-        description: error.message || "Failed to upload image.",
+        description: error.message || "Failed to upload images.",
       });
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newUrls = imageUrls.filter((_, i) => i !== index);
+    setImageUrls(newUrls);
+    // Update primary image if needed
+    if (newUrls.length > 0) {
+      setImageUrl(newUrls[0]);
+    } else {
+      setImageUrl('');
+    }
+  };
+
+  const handleSetMainImage = (index: number) => {
+    if (index === 0) return; // Already main image
+    const newUrls = [...imageUrls];
+    const [mainImage] = newUrls.splice(index, 1);
+    newUrls.unshift(mainImage);
+    setImageUrls(newUrls);
+    setImageUrl(mainImage);
+    toast({
+      title: "Success",
+      description: "Main image updated successfully.",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -185,9 +238,10 @@ export default function ProjectForm() {
         title: title.trim(),
         description: description.trim(),
         technologies: techArray,
-        image_url: imageUrl || null,
+        image_url: imageUrls.length > 0 ? imageUrls[0] : null,
+        image_urls: imageUrls,
         published,
-        ...(category && { category }), // Only include category if it exists
+        category,
       };
 
       if (isEditing) {
@@ -266,12 +320,12 @@ export default function ProjectForm() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="A full-stack e-commerce solution with payment integration..."
                   required
-                  maxLength={500}
-                  rows={4}
-                  className="bg-input border-border resize-none"
+                  maxLength={5000}
+                  rows={10}
+                  className="bg-input border-border resize-y min-h-[200px]"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {description.length}/500 characters
+                  {description.length}/5000 characters
                 </p>
               </div>
 
@@ -311,12 +365,13 @@ export default function ProjectForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image">Project Image</Label>
+                <Label htmlFor="images">Project Images</Label>
                 <div className="flex items-center gap-4">
                   <Input
-                    id="image"
+                    id="images"
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageUpload}
                     disabled={uploading}
                     className="bg-input border-border"
@@ -325,15 +380,58 @@ export default function ProjectForm() {
                     type="button"
                     variant="outline"
                     disabled={uploading}
-                    onClick={() => document.getElementById('image')?.click()}
+                    onClick={() => document.getElementById('images')?.click()}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {uploading ? 'Uploading...' : 'Upload'}
                   </Button>
                 </div>
-                {imageUrl && (
-                  <div className="mt-2 rounded-lg overflow-hidden border border-border">
-                    <img src={imageUrl} alt="Preview" className="w-full h-48 object-cover" />
+                <p className="text-xs text-muted-foreground">
+                  You can upload multiple images. Click "Set as Main" to change which image appears first.
+                </p>
+                {imageUrls.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {imageUrls.map((url, index) => (
+                      <div key={index} className="relative group rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-colors">
+                        <img src={url} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover" />
+                        
+                        {/* Delete Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                          title="Remove image"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        
+                        {/* Set as Main Button */}
+                        {index !== 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleSetMainImage(index)}
+                            className="absolute top-2 left-2 bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all shadow-lg font-medium"
+                            title="Set as main image"
+                          >
+                            Set as Main
+                          </button>
+                        )}
+                        
+                        {/* Main Image Badge */}
+                        {index === 0 && (
+                          <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded font-semibold shadow-lg">
+                            ⭐ Main Image
+                          </div>
+                        )}
+                        
+                        {/* Image Number */}
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                          #{index + 1}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

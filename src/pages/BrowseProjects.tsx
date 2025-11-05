@@ -122,57 +122,63 @@ export default function BrowseProjects() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a4d8f] via-[#2563eb] to-[#0ea5e9]">
       {/* Header */}
       <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="container mx-auto px-4 py-4">
-          {/* Top Row: Logo, Title, Search */}
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <img src="/logo-black.svg" alt="ProjectKart" className="h-8 w-8 brightness-0 invert" />
-              <span className="text-white font-bold text-lg hidden sm:block">ProjectKart</span>
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          {/* Top Row: Logo, Title, Search, Home Button */}
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            {/* Logo and Title */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <img src="/logo-black.svg" alt="ProjectKart" className="h-6 w-6 sm:h-8 sm:w-8 brightness-0 invert" />
+              <span className="text-white font-bold text-sm sm:text-lg">ProjectKart</span>
             </div>
             
-            <div className="flex-1 flex justify-center max-w-2xl mx-auto">
-              <div className="relative w-full max-w-md">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md mx-auto">
+              <div className="relative w-full">
+                <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/60 flex-shrink-0" />
                 <Input
                   type="text"
-                  placeholder="Search projects..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
+                  className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-xs sm:text-sm bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
                 />
               </div>
             </div>
             
+            {/* Home Button */}
             <Button
-              onClick={() => navigate('/')}
+              onClick={() => {
+                navigate('/');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/20 whitespace-nowrap"
+              className="text-white hover:bg-white/20 whitespace-nowrap flex-shrink-0 px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm h-auto"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" />
               <span className="hidden sm:inline">Home</span>
             </Button>
           </div>
 
           {/* Bottom Row: Category Filters */}
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-white font-semibold text-sm">Filter by Category</span>
+          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/10">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <span className="text-white font-semibold text-xs sm:text-sm">Filter by Category</span>
               {selectedCategories.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-white/60">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] sm:text-xs text-white/60">
                     {selectedCategories.length} selected
                   </span>
                   <button
                     onClick={() => setSelectedCategories([])}
-                    className="text-xs text-white/70 hover:text-white underline"
+                    className="text-[10px] sm:text-xs text-white/70 hover:text-white underline"
                   >
-                    Clear all
+                    Clear
                   </button>
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2">
               {PROJECT_CATEGORIES.filter(cat => cat !== "All Categories").map((cat) => {
                 const isSelected = selectedCategories.includes(cat);
                 return (
@@ -185,15 +191,15 @@ export default function BrowseProjects() {
                         setSelectedCategories([...selectedCategories, cat]);
                       }
                     }}
-                    className={`px-4 py-2 text-xs font-medium rounded-lg transition-all relative ${
+                    className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-medium rounded-lg transition-all relative touch-manipulation ${
                       isSelected
                         ? 'bg-white text-blue-600 shadow-lg scale-105'
                         : 'bg-white/20 text-white hover:bg-white/30 hover:scale-105'
                     }`}
                   >
-                    {cat}
+                    <span className="line-clamp-2 sm:line-clamp-1">{cat}</span>
                     {isSelected && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center text-white text-[10px]">
+                      <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-blue-600 rounded-full flex items-center justify-center text-white text-[8px] sm:text-[10px]">
                         ✓
                       </span>
                     )}
@@ -206,21 +212,21 @@ export default function BrowseProjects() {
       </header>
 
       {/* Projects Grid */}
-      <section className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         {loading ? (
-          <div className="text-center text-white py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p>Loading projects...</p>
+          <div className="text-center text-white py-12 sm:py-16 lg:py-20">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-white mx-auto mb-3 sm:mb-4"></div>
+            <p className="text-sm sm:text-base">Loading projects...</p>
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-white mb-4 text-lg">
+          <div className="text-center py-12 sm:py-16 lg:py-20 px-4">
+            <div className="text-white mb-3 sm:mb-4 text-base sm:text-lg">
               {searchQuery ? `No projects found for "${searchQuery}"` : "No projects available yet."}
             </div>
             {searchQuery && (
               <Button
                 onClick={() => setSearchQuery("")}
-                className="mt-4 bg-white text-blue-600 hover:bg-white/90"
+                className="mt-4 bg-white text-blue-600 hover:bg-white/90 text-sm sm:text-base"
               >
                 Clear Search
               </Button>
@@ -228,15 +234,16 @@ export default function BrowseProjects() {
           </div>
         ) : (
           <>
-            <div className="mb-4 text-white/90 text-sm text-center md:text-left">
+            <div className="mb-3 sm:mb-4 text-white/90 text-xs sm:text-sm text-center md:text-left px-1">
               {filteredProjects.length} {filteredProjects.length === 1 ? 'project' : 'projects'}
               {selectedCategories.length > 0 && ` in ${selectedCategories.join(', ')}`}
               {searchQuery && ` matching "${searchQuery}"`}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {filteredProjects.map((project) => (
                 <ProjectCard
                   key={project.id}
+                  id={project.id}
                   title={project.title}
                   description={project.description}
                   technologies={project.technologies}
@@ -250,28 +257,28 @@ export default function BrowseProjects() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900/50 backdrop-blur-md border-t border-white/10 py-12 mt-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <footer className="bg-gray-900/50 backdrop-blur-md border-t border-white/10 py-8 sm:py-10 lg:py-12 mt-12 sm:mt-16 lg:mt-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
             {/* Brand */}
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <img src="/logo-black.svg" alt="ProjectKart" className="h-10 w-10 brightness-0 invert" />
-                <span className="text-white font-bold text-lg">ProjectKart</span>
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <img src="/logo-black.svg" alt="ProjectKart" className="h-8 w-8 sm:h-10 sm:w-10 brightness-0 invert" />
+                <span className="text-white font-bold text-base sm:text-lg">ProjectKart</span>
               </div>
-              <p className="text-white/70 text-sm">
+              <p className="text-white/70 text-xs sm:text-sm leading-relaxed">
                 Professional ready-made projects and custom solutions for your business needs.
               </p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
+              <h3 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Quick Links</h3>
+              <ul className="space-y-1.5 sm:space-y-2">
                 <li>
                   <button 
                     onClick={() => navigate('/')} 
-                    className="text-white/70 hover:text-white transition-colors text-sm"
+                    className="text-white/70 hover:text-white transition-colors text-xs sm:text-sm"
                   >
                     Home
                   </button>
@@ -279,7 +286,7 @@ export default function BrowseProjects() {
                 <li>
                   <button 
                     onClick={() => navigate('/browse-projects')} 
-                    className="text-white/70 hover:text-white transition-colors text-sm"
+                    className="text-white/70 hover:text-white transition-colors text-xs sm:text-sm"
                   >
                     Browse Projects
                   </button>
@@ -291,7 +298,7 @@ export default function BrowseProjects() {
                       const message = encodeURIComponent("Hello, I'd like to discuss a project with you!");
                       window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
                     }}
-                    className="text-white/70 hover:text-white transition-colors text-sm"
+                    className="text-white/70 hover:text-white transition-colors text-xs sm:text-sm"
                   >
                     Contact Us
                   </button>
@@ -301,8 +308,8 @@ export default function BrowseProjects() {
 
             {/* Get in Touch */}
             <div>
-              <h3 className="text-white font-semibold mb-4">Get in Touch</h3>
-              <p className="text-white/70 text-sm mb-4">
+              <h3 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Get in Touch</h3>
+              <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
                 Ready to start your project? Contact us today!
               </p>
               <Button 
@@ -311,7 +318,7 @@ export default function BrowseProjects() {
                   const message = encodeURIComponent("Hello, I'd like to discuss a project with you!");
                   window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
                 }}
-                className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white hover:from-blue-700 hover:to-cyan-500"
+                className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white hover:from-blue-700 hover:to-cyan-500 text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2.5 w-full sm:w-auto"
               >
                 WhatsApp Us
               </Button>
@@ -319,7 +326,7 @@ export default function BrowseProjects() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-white/10 pt-6 text-center text-white/70 text-sm">
+          <div className="border-t border-white/10 pt-4 sm:pt-6 text-center text-white/70 text-xs sm:text-sm">
             <p>&copy; {new Date().getFullYear()} ProjectKart. All rights reserved.</p>
           </div>
         </div>

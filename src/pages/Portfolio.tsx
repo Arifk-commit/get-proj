@@ -129,7 +129,10 @@ export default function Portfolio() {
           </div>
           <div className="flex gap-6">
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => {
+                navigate('/');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`font-medium transition-colors ${
                 isScrolled ? 'text-gray-900 hover:text-blue-600' : 'text-white hover:text-cyan-200'
               }`}
@@ -191,40 +194,14 @@ export default function Portfolio() {
           </div>
         </div>
 
-        {/* Phone Mockup */}
+        {/* Hero Image */}
         <div className="absolute right-10 top-1/2 -translate-y-1/2 hidden xl:block">
           <div className="relative">
-            {/* Phone frame */}
-            <div className="w-[280px] h-[560px] bg-white rounded-[2.5rem] shadow-2xl p-2.5 border-[6px] border-gray-800">
-              <div className="w-full h-full bg-gradient-to-br from-blue-50 to-cyan-50 rounded-[2rem] overflow-hidden relative">
-                {/* Phone content */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <button 
-                      onClick={handleAddProject}
-                      className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl mx-auto mb-3 flex items-center justify-center hover:from-blue-600 hover:to-cyan-500 transition-all cursor-pointer shadow-lg hover:shadow-xl group"
-                      title={isAdmin ? "Add New Project" : "Login to Add Projects"}
-                    >
-                      <svg className="w-10 h-10 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </button>
-                    <div className="text-gray-600 text-xs mb-2">1400 x 900px</div>
-                    <div className="w-full h-24 bg-white/50 rounded-xl mb-2"></div>
-                    <div className="text-xs text-gray-400">2532 x 1170px</div>
-                  </div>
-                </div>
-                {/* Contact button on phone */}
-                <div className="absolute top-4 right-4">
-                  <button 
-                    onClick={handleContactClick}
-                    className="bg-white px-4 py-1.5 rounded-full shadow-lg text-blue-600 font-semibold text-xs hover:bg-blue-50 hover:shadow-xl transition-all cursor-pointer"
-                  >
-                    Contact
-                  </button>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="/mobile ui.jpg" 
+              alt="Mobile UI Preview" 
+              className="w-[400px] h-auto rounded-2xl shadow-2xl hover:shadow-3xl transition-shadow duration-300"
+            />
           </div>
         </div>
       </section>
@@ -250,20 +227,23 @@ export default function Portfolio() {
             </div>
           ) : (
             <>
+              {/* Mobile: Show 3 projects, Desktop: Show 6 projects */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-                {projects.slice(0, 6).map((project) => (
+                {projects.slice(0, 6).map((project, index) => (
                   <ProjectCard
                     key={project.id}
+                    id={project.id}
                     title={project.title}
                     description={project.description}
                     technologies={project.technologies}
                     imageUrl={project.image_url}
                     whatsappNumber={whatsappNumber}
+                    className={index >= 3 ? 'hidden md:block' : ''}
                   />
                 ))}
               </div>
               
-              {projects.length > 6 && (
+              {projects.length > 3 && (
                 <div className="text-center">
                   <Button
                     onClick={() => navigate('/browse-projects')}

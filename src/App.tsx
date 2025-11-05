@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Portfolio from "./pages/Portfolio";
 import BrowseProjects from "./pages/BrowseProjects";
+import ProjectDetails from "./pages/ProjectDetails";
 import Login from "./pages/admin/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import ProjectForm from "./pages/admin/ProjectForm";
@@ -23,6 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Portfolio />} />
           <Route path="/browse-projects" element={<BrowseProjects />} />
+          <Route path="/project/:id" element={<ProjectDetails />} />
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/dashboard" element={
             <ProtectedRoute>
