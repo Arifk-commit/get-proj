@@ -126,9 +126,12 @@ export default function BrowseProjects() {
       {/* Header */}
       <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          {/* Top Row: Menu, Logo, Title, and Home Button */}
-          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3">
-            {/* Left side: Menu button (mobile only) + Logo and Title */}
+          {/* Desktop: Single Row with Logo, Search, Home */}
+          {/* Mobile: Logo & Home on first row, Search on second row */}
+          
+          {/* First Row on Mobile / Complete Row on Desktop */}
+          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+            {/* Left: Menu (mobile) + Logo + Title */}
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Mobile Menu Button */}
               <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -215,8 +218,22 @@ export default function BrowseProjects() {
                 <span className="text-white font-bold text-sm sm:text-lg">ProjectKart</span>
               </div>
             </div>
+
+            {/* Center: Search Bar (Desktop) - Hidden on mobile */}
+            <div className="hidden sm:flex flex-1 max-w-md mx-auto">
+              <div className="relative w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60 flex-shrink-0" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
+                />
+              </div>
+            </div>
             
-            {/* Home Button */}
+            {/* Right: Home Button */}
             <Button
               onClick={() => {
                 navigate('/');
@@ -231,16 +248,16 @@ export default function BrowseProjects() {
             </Button>
           </div>
 
-          {/* Search Bar Row - Full width on mobile */}
-          <div className="mb-3 sm:mb-4">
-            <div className="relative w-full sm:max-w-md sm:mx-auto">
-              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/60 flex-shrink-0" />
+          {/* Second Row: Search Bar (Mobile only) */}
+          <div className="sm:hidden mb-3">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/60 flex-shrink-0" />
               <Input
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-xs sm:text-sm bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-white/20 backdrop-blur-sm border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 focus:border-white/50 focus:ring-white/30 rounded-full"
               />
             </div>
           </div>
