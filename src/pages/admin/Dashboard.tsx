@@ -99,23 +99,41 @@ export default function Dashboard() {
     if (!deleteId) return;
 
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You must be logged in to delete projects.",
+        });
+        navigate('/admin/login');
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
         .delete()
         .eq('id', deleteId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
         description: "Project deleted successfully.",
       });
-      fetchProjects();
+      
+      // Refresh projects list after successful deletion
+      await fetchProjects();
     } catch (error: any) {
+      console.error('Delete failed:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete project.",
+        description: error?.message || "Failed to delete project.",
       });
     } finally {
       setDeleteId(null);
